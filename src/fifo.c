@@ -89,6 +89,12 @@ int fifo_available(const struct fifo *fifo)
 	return (int)n;
 }
 
+int fifo_free_space(const struct fifo *fifo)
+{
+	assert(fifo != NULL);
+	return fifo->capacity - fifo_available(fifo);
+}
+
 /**
  * Reads data from FIFO.
  *

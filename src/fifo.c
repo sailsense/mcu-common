@@ -92,7 +92,7 @@ int fifo_available(const struct fifo *fifo)
 int fifo_free_space(const struct fifo *fifo)
 {
 	assert(fifo != NULL);
-	return fifo->capacity - fifo_available(fifo);
+	return (int)fifo->capacity - fifo_available(fifo);
 }
 
 /**

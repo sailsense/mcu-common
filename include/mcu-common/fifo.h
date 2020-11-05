@@ -56,6 +56,7 @@ extern "C" {
 		(fifo)->element_size = (elem_size); \
 		(fifo)->capacity = (fifo_capacity); \
 		fifo_init(fifo); \
+		fifo_stats_register(fifo, __FILE__, #fifo); \
 	} while (0)
 
 
@@ -76,6 +77,8 @@ struct fifo {
 	volatile bool full;
 	/** FIFO empty flag (handled internally) */
 	volatile bool empty;
+	/** FIFO write overflows (number of elements which did not fit FIFO): */
+	volatile size_t wr_overflows;
 };
 
 bool fifo_init(struct fifo *fifo);
@@ -88,6 +91,8 @@ int fifo_write(struct fifo *fifo, const void *src, int count);
 int fifo_gets(struct fifo *fifo, char *str);
 int fifo_puts(struct fifo *fifo, const char *str);
 
+void fifo_stats_register(const struct fifo *fifo, const char *file_name,
+			 const char *fifo_name);
 /**@}*/
 
 #ifdef __cplusplus

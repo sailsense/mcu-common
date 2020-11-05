@@ -35,6 +35,7 @@
  */
 
 #include <assert.h>
+#include <string.h>
 #include <mcu-common/fifo.h>
 #include <mcu-common/critical.h>
 
@@ -92,7 +93,7 @@ int fifo_available(const struct fifo *fifo)
 int fifo_free_space(const struct fifo *fifo)
 {
 	assert(fifo != NULL);
-	return fifo->capacity - fifo_available(fifo);
+	return (int)fifo->capacity - fifo_available(fifo);
 }
 
 /**
@@ -170,6 +171,8 @@ int fifo_write(struct fifo *fifo, const void *src, int count)
 	if (n > 0)
 		fifo->empty = false;
 
+	fifo->wr_overflows += (size_t)(count - n);
+
 	CRITICAL_EXIT();
 
 	return n;
@@ -240,6 +243,10 @@ int fifo_puts(struct fifo *fifo, const char *str)
 
 	CRITICAL_ENTER();
 
+	if (fifo->full) {
+		fifo->wr_overflows += strlen(str);
+	}
+
 	while (!fifo->full) {
 		char *buffer = &((char *)fifo->buffer)[fifo->head];
 		*buffer = str[n];
@@ -250,6 +257,7 @@ int fifo_puts(struct fifo *fifo, const char *str)
 
 		if (fifo->head == fifo->tail) {
 			*buffer = '\0';
+			fifo->wr_overflows += strlen(&str[n]);
 			fifo->full = true;
 		}
 
